@@ -144,6 +144,6 @@ function showNonSymbolicRatios(ratio1, ratio2){
 
 function tick(){
 
-	sequenceHandler.checkFixation();
+	sequenceHandler.handleSequence();
 	stage.update();
 }

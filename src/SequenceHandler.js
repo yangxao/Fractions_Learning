@@ -9,6 +9,11 @@
 		// fixation time
 		this.time = 2000;	// in milliseconds
 		this.timeRecorder = 0;	// used to keep track of time
+		
+		this.line_a = {};
+		this.line_b = {};
+		this.line_c = {};
+		this.line_d = {};
 
 		// create the objects for fractions
 		this.defineDrawObjects();
@@ -27,28 +32,14 @@
 		
 		var sequence = {};
 		this.sequenceRowLength = inputData.length;
-
-		// iterate through the input array
-		for(var i = 0; i < this.sequenceRowLength; i++){
-			sequence[i] = { "frac_num": inputData[i][1], "frac_dem": inputData[i][2], 
-							"nume1": inputData[i][5], "denom1": inputData[i][6], 
-							"nume2": inputData[i][7], "denom2": inputData[i][8],
-							"correct": inputData[i][4]
-						};
-		}
-
-		// we have sequence:
-		// fraction numerator, fraction denominator
-		// left fraction: numerator1, denominator1
-		// right fraction: numerator2, denominator2
-		this.sequence = sequence;
+		this.sequence = inputData;
 	};
 
 	// will be reusing all the same objects, just changing them
 	// 
 	SequenceHandler.prototype.defineDrawObjects = function() {
 
-		var SCALE = 200;
+		var SCALE = this.height * .4;
 		var cw = this.width;
 		var ch = this.height;
 
@@ -91,36 +82,44 @@
 				
 				*/
 
-				self.displayEndSequence();
+				// DO SOMETHING
+				console.log(this.sequence);
 			}
 			else{
 
-				if(self.sequence[self.sequenceIndex]["correct"] == "left"){
+				if(self.sequence[self.sequenceIndex]["correct_side"] == "left"){
 					/*
 						Sequence is correct.
 						Record data.
 					*/
 
-					console.log(self.timeRecorder);
-					console.log(Date.now());
-					var time = Date.now() - self.timeRecorder;
-					//time = convertMStoS(time, 2);
+					//console.log(self.timeRecorder);
+					//console.log(Date.now());
 
-					self.outPutData[self.sequenceIndex].push("correct");
-					self.outPutData[self.sequenceIndex].push("left");
-					self.outPutData[self.sequenceIndex].push(time);
+					var time = Date.now() - self.timeRecorder;
+					time = convertMStoS(time, 3);
+
+					self.outPutData[self.sequenceIndex]['answer'] = "correct";
+					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
+					self.outPutData[self.sequenceIndex]['time'] = time;
+					console.log("correct");
 				}
 				else{
 					/*
 						Sequence is incorrect.
 						Record data.
 					*/
-					var time = Date.now() - self.timeRecorder;
-					//time = convertMStoS(time, 2);
+					//console.log(self.timeRecorder);
+					//console.log(Date.now());
 
-					self.outPutData[self.sequenceIndex].push("incorrect");
-					self.outPutData[self.sequenceIndex].push("left");
-					self.outPutData[self.sequenceIndex].push(time);
+					var time = Date.now() - self.timeRecorder;
+					time = convertMStoS(time, 3);
+
+					self.outPutData[self.sequenceIndex]['answer'] = "incorrect";
+					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
+					self.outPutData[self.sequenceIndex]['time'] = time;
+
+					console.log("incorrect");
 				}
 
 				// go to the next row
@@ -128,7 +127,7 @@
 			}
 
 			// starts the next sequence
-			console.log(self.outPutData[self.sequenceIndex - 1]);
+			//console.log(self.outPutData[self.sequenceIndex - 1]);
 			self.startSequence();
 		});
 
@@ -154,20 +153,21 @@
 			}
 			else{
 
-				if(self.sequence[self.sequenceIndex]["correct"] == "right"){
+				if(self.sequence[self.sequenceIndex]["correct_side"] == "right"){
 					/*
 						Sequence is correct.
 						Record data.
 					*/
-					console.log(self.timeRecorder);
-					console.log(Date.now());
+					//console.log(self.timeRecorder);
+					//console.log(Date.now());
 
 					var time = Date.now() - self.timeRecorder;
-					//time = convertMStoS(time, 2);
+					time = convertMStoS(time, 3);
 
-					self.outPutData[self.sequenceIndex].push("correct");
-					self.outPutData[self.sequenceIndex].push("right");
-					self.outPutData[self.sequenceIndex].push(time);
+					self.outPutData[self.sequenceIndex]['answer'] = "correct";
+					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
+					self.outPutData[self.sequenceIndex]['time'] = time;
+					console.log("correct");
 				}
 				else{
 					/*
@@ -175,19 +175,24 @@
 						Record data.
 					*/
 
-					var time = Date.now() - self.timeRecorder;
-					//time = convertMStoS(time, 2);
+					//console.log(self.timeRecorder);
+					//console.log(Date.now());
 
-					self.outPutData[self.sequenceIndex].push("incorrect");
-					self.outPutData[self.sequenceIndex].push("right");
-					self.outPutData[self.sequenceIndex].push(time);
+					var time = Date.now() - self.timeRecorder;
+					time = convertMStoS(time, 3);
+
+					self.outPutData[self.sequenceIndex]['answer'] = "incorrect";
+					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
+					self.outPutData[self.sequenceIndex]['time'] = time;
+
+					console.log("incorrect");
 				}
 
 				self.sequenceIndex++;
 			}
 
 			// clear the screen, record the info
-			console.log(self.outPutData[self.sequenceIndex - 1]);
+			//console.log(self.outPutData[self.sequenceIndex - 1]);
 			self.startSequence();
 		});
 
@@ -222,6 +227,9 @@
 
 	SequenceHandler.prototype.startSequence = function(){
 
+		// resets the timer
+		this.timeRecorder = -1;
+
 		this.unShow();
 		this.fixation.startTime = createCountDown(this.time);
 		this.fixation.visible = true;
@@ -235,19 +243,38 @@
 	*/
 	SequenceHandler.prototype.displayEndSequence = function(){
 		this.unShow();
-		this.sequenceOn = false;
+
+		// print stats
+		var text = new createjs.Text("END", "bold 72px Arial", "#ffffff");
+		text.x = .35 * this.height;
+		text.y = .4 * this.width;
+
+		this.sequenceStage.addChild(text);
+
+		
 	}
 
+	// this sequence loops continously 
 	SequenceHandler.prototype.handleSequence = function(seq){
 
 		if(this.fixationTimeOver() && this.sequenceOn){
-			var num = this.sequence[this.sequenceIndex]["frac_num"];
-			var den = this.sequence[this.sequenceIndex]["frac_dem"];
+			var num = this.sequence[this.sequenceIndex]["numerator"];
+			var den = this.sequence[this.sequenceIndex]["denominator"];
 
-			this.showFraction(num, den);
-			this.showNonSymbolicRatios();
-			// set time:
-			this.timeRecorder = Date.now();
+			if(this.sequenceIndex == (this.sequenceRowLength-1)){
+				this.displayEndSequence();
+			}
+			else{
+
+				if(this.timeRecorder == -1){
+					this.timeRecorder = Date.now();
+				}
+				
+				//console.log(this.timeRecorder);
+				this.showFraction(num, den);
+				this.showNonSymbolicRatios();
+				// set time:
+			}
 		}
 	}
 
@@ -273,6 +300,7 @@
 
 	// Checks to see if the fixation has exceed its time limit
 	SequenceHandler.prototype.fixationTimeOver = function(){
+
 		if(convertMStoS(this.fixation.startTime()) < 0 || convertMStoS(this.fixation.startTime()) == 0){
 			this.fixation.visible = false;
 			return true;
@@ -301,9 +329,26 @@
 
 		// get the ratios for the current sequence
 		// denominators will be the scale
-		var SCALE = 200;
-		var l_ratio = this.sequence[this.sequenceIndex]["nume1"] / this.sequence[this.sequenceIndex]["denom1"];
-		var r_ratio = this.sequence[this.sequenceIndex]["nume2"] / this.sequence[this.sequenceIndex]["denom2"]; 
+
+		line_a = {
+			'length' : this.sequence[this.sequenceIndex]['a_length'],
+			'top'	   : this.sequence[this.sequenceIndex]['a_top']
+		}
+		
+		line_b = {
+			'length' : this.sequence[this.sequenceIndex]['b_length'],
+			'top'	   : this.sequence[this.sequenceIndex]['b_top']
+		}
+
+		line_c = {
+			'length' : this.sequence[this.sequenceIndex]['c_length'],
+			'top'	   : this.sequence[this.sequenceIndex]['c_top']
+		}
+
+		line_d = {
+			'length' : this.sequence[this.sequenceIndex]['d_length'],
+			'top'	   : this.sequence[this.sequenceIndex]['d_top']
+		}
 
 		var cw = this.width;
 		var ch = this.height;
@@ -314,15 +359,15 @@
 
 		// add background
 		this.l_line_ratio.x = cw * .25;
-		this.l_line_ratio.y = ch * .35;
-		this.l_line.graphics.moveTo(0,0).lineTo(0, SCALE);
-		this.l_line.graphics.moveTo(20,0).lineTo(20, SCALE * l_ratio);
+		this.l_line_ratio.y = ch * .5;
+		this.l_line.graphics.moveTo(0,(line_a.top * ch - this.l_line_ratio.y)).lineTo(0, line_a.length * ch);
+		this.l_line.graphics.moveTo(20,(line_b.top * ch - this.l_line_ratio.y)).lineTo(20, line_b.length * ch);
 
 		// add background
 		this.r_line_ratio.x = cw * .75;
-		this.r_line_ratio.y = ch * .35;
-		this.r_line.graphics.moveTo(0,0).lineTo(0, SCALE);
-		this.r_line.graphics.moveTo(20,0).lineTo(20, SCALE * r_ratio);
+		this.r_line_ratio.y = ch * .5;
+		this.r_line.graphics.moveTo(0,(line_c.top * ch - this.r_line_ratio.y)).lineTo(0, line_c.length * ch);
+		this.r_line.graphics.moveTo(20,(line_d.top * ch - this.r_line_ratio.y)).lineTo(20, line_d.length * ch);
 
 	}
 

@@ -83,7 +83,7 @@
 				*/
 
 				// DO SOMETHING
-				console.log(this.sequence);
+				console.log(self.sequence);
 			}
 			else{
 
@@ -99,9 +99,9 @@
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
 
-					self.outPutData[self.sequenceIndex]['answer'] = "correct";
+					self.outPutData[self.sequenceIndex]['correctness'] = "correct";
 					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
-					self.outPutData[self.sequenceIndex]['time'] = time;
+					self.outPutData[self.sequenceIndex]['rt'] = time;
 					console.log("correct");
 				}
 				else{
@@ -115,9 +115,9 @@
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
 
-					self.outPutData[self.sequenceIndex]['answer'] = "incorrect";
+					self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
 					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
-					self.outPutData[self.sequenceIndex]['time'] = time;
+					self.outPutData[self.sequenceIndex]['rt'] = time;
 
 					console.log("incorrect");
 				}
@@ -149,7 +149,7 @@
 				
 				*/
 
-				self.displayEndSequence();
+				console.log(self.sequence);
 			}
 			else{
 
@@ -164,9 +164,9 @@
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
 
-					self.outPutData[self.sequenceIndex]['answer'] = "correct";
+					self.outPutData[self.sequenceIndex]['correctness'] = "correct";
 					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
-					self.outPutData[self.sequenceIndex]['time'] = time;
+					self.outPutData[self.sequenceIndex]['rt'] = time;
 					console.log("correct");
 				}
 				else{
@@ -181,9 +181,9 @@
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
 
-					self.outPutData[self.sequenceIndex]['answer'] = "incorrect";
+					self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
 					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
-					self.outPutData[self.sequenceIndex]['time'] = time;
+					self.outPutData[self.sequenceIndex]['rt'] = time;
 
 					console.log("incorrect");
 				}
@@ -262,6 +262,21 @@
 			var den = this.sequence[this.sequenceIndex]["denominator"];
 
 			if(this.sequenceIndex == (this.sequenceRowLength-1)){
+
+				if(this.sequenceOn){
+
+					/*
+
+					POST REQUEST SHOULD GO HERE...
+
+
+					*/
+
+
+					console.log(this.sequence);
+					this.sequenceOn = !this.sequenceOn;
+				}
+
 				this.displayEndSequence();
 			}
 			else{

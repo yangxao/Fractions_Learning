@@ -16,7 +16,9 @@
 		this.correctCounter = 0;
 
 		// how long can participant take on each problem
-		this.timeOutTimer = 2000;
+		this.timeOutTime = 2000;
+		this.timeOutTimer = this.timeOutTime;
+		this.timedOutSwitch = true;
 		// how long feedback will be displayed on screen
 		this.feedbackTime = 500;
 		this.feedbackTimer = this.feedbackTime;
@@ -356,7 +358,7 @@
 
 				// turn off the timer
 				this.feedbackTimerOn = false;
-
+				this.timedOutSwitch = true;
 				// start next sequence
 				this.sequenceIndex++;
 				this.startSequence();
@@ -390,19 +392,36 @@
 
 					this.displayEndSequence();
 				}
+
+				// general looping of sequence
 				else{
 
 					// displays the fraction
 
 					if(this.timeRecorder == -1){
 						this.timeRecorder = Date.now();
+						this.timeOutTimer = createCountDown(this.timeOutTime);
 					}
-					
 					
 					//console.log(this.timeRecorder);
 					this.showFraction(num, den);
 					this.showNonSymbolicRatios();
-					// set time:
+					
+					// if run out of time
+					if(this.timeOutTimer() < 0){
+
+						this.outPutData[this.sequenceIndex]['correctness'] = "incorrect";
+						this.outPutData[this.sequenceIndex]['side_selected'] = "time_out";
+						this.outPutData[this.sequenceIndex]['rt'] = this.timeOutTime;
+						this.timeOutFeedbackText.visible = true;
+
+						if(this.timedOutSwitch){
+							this.feedbackTimer = createCountDown(this.feedbackTime);
+							this.feedbackTimerOn = true;
+							this.timedOutSwitch = false;
+						}
+					}
+
 				}
 			}
 		}// end of if statement

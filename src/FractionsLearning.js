@@ -26,8 +26,6 @@ function readData(){
 				{"numerator":"1","denominator":"3","sn":"sn1","distract_distance":0.1,"target_magnitude":0.33333333333333,"distract_magnitude":0.43333333333333,"correct_side":"left","a_length":0.08,"b_length":0.24,"c_length":0.104,"d_length":0.24,"a_top":0.5,"b_top":0.5,"c_top":0.5,"d_top":0.5},
 				{"numerator":"1","denominator":"2","sn":"sn1","distract_distance":0.1,"target_magnitude":0.5,"distract_magnitude":0.6,"correct_side":"left","a_length":0.145,"b_length":0.29,"c_length":0.174,"d_length":0.29,"a_top":0.5,"b_top":0.5,"c_top":0.5,"d_top":0.5},
 				{"numerator":"1","denominator":"3","sn":"sn1","distract_distance":0.1,"target_magnitude":0.33333333333333,"distract_magnitude":0.43333333333333,"correct_side":"right","a_length":0.052,"b_length":0.12,"c_length":0.04,"d_length":0.12,"a_top":0.5,"b_top":0.5,"c_top":0.5,"d_top":0.5}];
-	//console.log(test_array);
-
 
 	// In the future, should test to make sure the array has all of its associative properties
 

@@ -10,17 +10,17 @@
 		// fixation time
 		this.time = 500;	// in milliseconds
 		this.timeRecorder = 0;	// used to keep track of time
-		this.sessionTime = 60000 * 60;	// an hour
+		this.sessionTime = 60000 * 20;	// an hour
 		this.sessionTimer = this.sessionTime; 
 
 		this.correctCounter = 0;
 
 		// how long can participant take on each problem
-		this.timeOutTime = 2000;
+		this.timeOutTime = 3000;
 		this.timeOutTimer = this.timeOutTime;
 		this.timedOutSwitch = true;
 		// how long feedback will be displayed on screen
-		this.feedbackTime = 500;
+		this.feedbackTime = 1000;
 		this.feedbackTimer = this.feedbackTime;
 		this.feedbackTimerOn = false;
 
@@ -164,6 +164,8 @@
 					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 
+					self.r_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
+
 					console.log("incorrect");
 					self.incorrectFeedbackText.visible = true;
 				}
@@ -239,6 +241,8 @@
 					self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
 					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
+
+					self.l_click_area.graphics.clear().f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
 
 					console.log("incorrect");
 					self.incorrectFeedbackText.visible = true;
@@ -415,6 +419,15 @@
 						this.outPutData[this.sequenceIndex]['rt'] = this.timeOutTime;
 						this.timeOutFeedbackText.visible = true;
 
+						// display correct choice
+						var SCALE = this.height * .4;
+						if(this.sequence[this.sequenceIndex]["correct_side"] == "right"){
+							this.r_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
+						}
+						else{
+							this.l_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
+						}
+
 						if(this.timedOutSwitch){
 							this.feedbackTimer = createCountDown(this.feedbackTime);
 							this.feedbackTimerOn = true;
@@ -444,6 +457,10 @@
 		this.correctFeedbackText.visible = false;
 		this.incorrectFeedbackText.visible = false;
 		this.timeOutFeedbackText.visible = false;
+
+		var SCALE = this.height * .4;
+		this.l_click_area.graphics.f('#AAAAAA').rr(-10,-10, 40, SCALE + 20,10);
+		this.r_click_area.graphics.f('#AAAAAA').rr(-10,-10, 40, SCALE + 20,10);
 	}
 
 	// this generates the image of the fixation. The param, time takes in

@@ -10,12 +10,18 @@
 		// fixation time
 		this.time = 500;	// in milliseconds
 		this.timeRecorder = 0;	// used to keep track of time
-		this.overallTimer = 5000;
-		this.timeLeft = this.overallTimer; 
+		this.sessionTime = 60000 * 60;	// an hour
+		this.sessionTimer = this.sessionTime; 
 
 		this.correctCounter = 0;
+
+		// how long can participant take on each problem
 		this.timeOutTimer = 2000;
-		
+		// how long feedback will be displayed on screen
+		this.feedbackTime = 500;
+		this.feedbackTimer = this.feedbackTime;
+		this.feedbackTimerOn = false;
+
 		this.line_a = {};
 		this.line_b = {};
 		this.line_c = {};
@@ -42,7 +48,6 @@
 	};
 
 	// will be reusing all the same objects, just changing them
-	// 
 	SequenceHandler.prototype.defineDrawObjects = function() {
 
 		var SCALE = this.height * .4;
@@ -88,6 +93,22 @@
 		this.l_line_ratio.addChild(this.l_line);		
 
 
+		// define feedback text objects
+		this.correctFeedbackText = new createjs.Text("correct", "24px Arial", "#FFFFFF");
+		this.correctFeedbackText.x = .42 * cw;
+		this.correctFeedbackText.y = .4 * ch;
+		this.correctFeedbackText.visible = false;
+
+		this.incorrectFeedbackText = new createjs.Text("incorrect", "24px Arial", "#FFFFFF");
+		this.incorrectFeedbackText.x = .42 * cw;
+		this.incorrectFeedbackText.y = .4 * ch;
+		this.incorrectFeedbackText.visible = false;
+
+		this.timeOutFeedbackText = new createjs.Text("time out", "24px Arial", "#FFFFFF");
+		this.timeOutFeedbackText.x = .42 * cw;
+		this.timeOutFeedbackText.y = .4 * ch;
+		this.timeOutFeedbackText.visible = false;
+
 		/*
 			This code chunk handles the click event for the left fraction.
 			In the future, line ratio should be its own class
@@ -102,8 +123,6 @@
 				
 				*/
 
-				// DO SOMETHING
-				console.log(self.sequence);
 			}
 			else{
 
@@ -126,6 +145,7 @@
 
 					self.correctCounter += 1;
 					self.correctText.text = "correct: " + self.correctCounter;
+					self.correctFeedbackText.visible = true;
 				}
 				else{
 					/*
@@ -143,15 +163,19 @@
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 
 					console.log("incorrect");
+					self.incorrectFeedbackText.visible = true;
 				}
 
 				// go to the next row
-				self.sequenceIndex++;
+				// self.sequenceIndex++;
+				//self.sequenceIndex += 1;
+
+				// create a timer for the feedback
+				self.feedbackTimer = createCountDown(self.feedbackTime);
+				self.feedbackTimerOn = true;
 			}
 
-			// starts the next sequence
-			//console.log(self.outPutData[self.sequenceIndex - 1]);
-			self.startSequence();
+			self.handleSequence();
 		});
 
 
@@ -196,6 +220,7 @@
 
 					self.correctCounter += 1;
 					self.correctText.text = "correct: " + self.correctCounter;
+					self.correctFeedbackText.visible = true;
 				}
 				else{
 					/*
@@ -214,14 +239,17 @@
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 
 					console.log("incorrect");
+					self.incorrectFeedbackText.visible = true;
 				}
 
-				self.sequenceIndex++;
+				//self.sequenceIndex += 1;
+
+				// create a timer for the feedback
+				self.feedbackTimer = createCountDown(self.feedbackTime);
+				self.feedbackTimerOn = true;
 			}
 
-			// clear the screen, record the info
-			//console.log(self.outPutData[self.sequenceIndex - 1]);
-			self.startSequence();
+			self.handleSequence();
 		});
 
 		/*
@@ -251,6 +279,10 @@
 		this.sequenceStage.addChild(this.fraction_Container);
 		this.sequenceStage.addChild(this.l_line_ratio);
 		this.sequenceStage.addChild(this.r_line_ratio);
+		this.sequenceStage.addChild(this.correctFeedbackText);
+		this.sequenceStage.addChild(this.incorrectFeedbackText);
+		this.sequenceStage.addChild(this.timeOutFeedbackText);
+
 
 		this.correctText = new createjs.Text("correct: 0", "bold 20px Arial", "#ffffff");
 		this.correctText.x = .75 * cw;
@@ -264,6 +296,7 @@
 		// resets the timer
 		this.timeRecorder = -1;
 
+		this.unShowFeedback();
 		this.unShow();
 		this.fixation.startTime = createCountDown(this.time);
 		this.fixation.visible = true;
@@ -284,7 +317,7 @@
 
 				self.instruction = false;
 
-				self.timeLeft = createCountDown(self.overallTimer);
+				self.sessionTimer = createCountDown(self.sessionTime);
 			}
 		}		
 	}
@@ -316,7 +349,20 @@
 
 	// this sequence loops continously 
 	SequenceHandler.prototype.handleSequence = function(seq){
-		
+
+		// if this is during a transition
+		if(this.feedbackTimerOn){
+			if(this.feedbackTimer() < 0){
+
+				// turn off the timer
+				this.feedbackTimerOn = false;
+
+				// start next sequence
+				this.sequenceIndex++;
+				this.startSequence();
+			}
+		}
+
 		if(this.fixationTimeOver() && this.sequenceOn){
 
 			if(this.instruction){
@@ -327,21 +373,18 @@
 				var den = this.sequence[this.sequenceIndex]["denominator"];
 
 				// if time ends
-				if(this.timeLeft() < 0 || this.timeLeft() == 0){
+				if(this.sessionTimer() < 0 || this.sessionTimer() == 0){
 					if(this.sequenceOn){
 						this.sequenceOn = !this.sequenceOn;
 					}
 
+					// end the session
 					this.displayEndSequence();
 				}
 				// if we are at the end of the dataset
 				else if(this.sequenceIndex == (this.sequenceRowLength-1)){
 
 					if(this.sequenceOn){
-
-
-
-						//console.log(this.sequence);
 						this.sequenceOn = !this.sequenceOn;
 					}
 
@@ -362,7 +405,8 @@
 					// set time:
 				}
 			}
-		}
+		}// end of if statement
+
 	}
 
 
@@ -375,6 +419,12 @@
 
 		this.fraction_Container.visible = false;
 		this.correctText.visible = false;
+	}
+
+	SequenceHandler.prototype.unShowFeedback = function(){
+		this.correctFeedbackText.visible = false;
+		this.incorrectFeedbackText.visible = false;
+		this.timeOutFeedbackText.visible = false;
 	}
 
 	// this generates the image of the fixation. The param, time takes in

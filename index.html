@@ -6,11 +6,43 @@
 		<script type="text/javascript" src="src/FractionsLearning.js"></script>
 		<script type="text/javascript" src="src/SequenceHandler.js"></script>
 	</head>
-	<body onload="init()">
+	<body>
 		<div class="canvasContainer">
 			<canvas id="myCanvas" height="500" width="500" style="background-color:#AAAAAA">
 				Your Browser doesn't support canvas.
 			</canvas>
 		</div>
+		<form id='formBox' name="inputForm">
+			user id: <input type='text' name='id' id='inputId'>
+			<button type='button' id='buttonId'> Submit</button>
+		</form>
+
+		<script type="text/javascript">
+
+			var button = document.getElementById('buttonId');
+			var input = document.getElementById('inputId');
+			var form = document.getElementById('formBox');
+
+			var b = document.createElement("b");
+			var t = document.createTextNode("Enter an id");
+			b.appendChild(t);
+
+			button.onclick = function(){
+				var id = input.value;
+
+				if(id == ''){
+					formBox.appendChild(b);
+				}
+				else{
+
+				formBox.style.visibility = 'hidden';
+				init(id);
+
+
+				}
+			}
+			
+
+		</script>
 	</body>
 </html>

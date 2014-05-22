@@ -1,7 +1,21 @@
-.canvasContainer{
+.canvasContainer {
 	float: left;
 }
 
 .sampleData {
 
+}
+
+#formBox {
+	visibility: visible;
+	position: absolute;
+	background: white;
+	border: 2px solid #3c3c3c;
+	color: black;
+	z-index: 100;
+	width: 300px;
+	height: 40px;
+	padding: 20px;
+	left: 5%;
+	top: 30%;
 }

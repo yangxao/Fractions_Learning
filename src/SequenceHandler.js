@@ -6,9 +6,15 @@
 		this.height = cHeight;
 		this.sequenceIndex = 0;		// the current fraction pair
 		this.sequenceOn = true;
+		this.instruction = true;
 		// fixation time
-		this.time = 2000;	// in milliseconds
+		this.time = 500;	// in milliseconds
 		this.timeRecorder = 0;	// used to keep track of time
+		this.overallTimer = 5000;
+		this.timeLeft = this.overallTimer; 
+
+		this.correctCounter = 0;
+		this.timeOutTimer = 2000;
 		
 		this.line_a = {};
 		this.line_b = {};
@@ -43,12 +49,26 @@
 		var cw = this.width;
 		var ch = this.height;
 
+		// text
+		this.instructionText = new createjs.Text("[INSTRUCTION]", "36px Arial", "#FFFFFF");
+		this.instructionText.x = .25 * cw;
+		this.instructionText.y = .4 * ch;
+		this.instructionText.visible = false;
+		this.sequenceStage.addChild(this.instructionText);
+
+		this.instructionText2 = new createjs.Text("Press [space] to continue", "24px Arial", "#FFFFFF");
+		this.instructionText2.x = .25 * cw;
+		this.instructionText2.y = .5 * ch;
+		this.instructionText2.visible = false;
+		this.sequenceStage.addChild(this.instructionText2);
+
 		//  draws the fixation object
 		this.fixation =  new createjs.Shape();
 		this.fixation.graphics.setStrokeStyle(3).beginStroke("white");
 		this.fixation.graphics.moveTo(cw *.5, ch* .4).lineTo(cw * .5, ch * .6);
 		this.fixation.graphics.moveTo(cw * .4, ch * .5).lineTo(cw * .6, ch * .5);
 		this.sequenceStage.addChild(this.fixation);
+
 
 		// This code chunk manages the objects for
 		// the nonsymbolic ratios
@@ -103,6 +123,9 @@
 					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 					console.log("correct");
+
+					self.correctCounter += 1;
+					self.correctText.text = "correct: " + self.correctCounter;
 				}
 				else{
 					/*
@@ -140,6 +163,8 @@
 		this.r_line_ratio.addChild(this.r_click_area);
 		this.r_line_ratio.addChild(this.r_line);
 
+
+
 		this.r_line_ratio.on("click", function(evt){
 
 			if(self.sequenceIndex == (self.sequenceRowLength-1)){
@@ -168,6 +193,9 @@
 					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 					console.log("correct");
+
+					self.correctCounter += 1;
+					self.correctText.text = "correct: " + self.correctCounter;
 				}
 				else{
 					/*
@@ -223,6 +251,12 @@
 		this.sequenceStage.addChild(this.fraction_Container);
 		this.sequenceStage.addChild(this.l_line_ratio);
 		this.sequenceStage.addChild(this.r_line_ratio);
+
+		this.correctText = new createjs.Text("correct: 0", "bold 20px Arial", "#ffffff");
+		this.correctText.x = .75 * cw;
+		this.correctText.y = .01 * ch;
+
+		this.sequenceStage.addChild(this.correctText);
 	}
 
 	SequenceHandler.prototype.startSequence = function(){
@@ -236,6 +270,26 @@
 		this.handleSequence();
 	}
 
+	SequenceHandler.prototype.displayInstruction = function(){
+		this.instructionText.visible = true;
+		this.instructionText2.visible = true;
+
+		var self = this;
+		document.onkeydown = function checkKey(e){
+			e = e || window.event;
+
+			if(e.keyCode == 32){
+				self.instructionText.visible = false;
+				self.instructionText2.visible = false;
+
+				self.instruction = false;
+
+				self.timeLeft = createCountDown(self.overallTimer);
+			}
+		}		
+	}
+
+
 	/*
 	Currently just hides the fraction and nonysmbolic ratios.
 	Can change to show statistics in the end, or to submit the
@@ -245,50 +299,68 @@
 		this.unShow();
 
 		// print stats
-		var text = new createjs.Text("END", "bold 72px Arial", "#ffffff");
-		text.x = .35 * this.height;
-		text.y = .4 * this.width;
+		var text = new createjs.Text("--", "bold 20px Arial", "#ffffff");
+		text.text = "You got " + this.correctCounter + " / " + this.sequenceIndex + " correct."; 
+		text.x = .3 * this.width;
+		text.y = .3 * this.height;
+
+		var textPercentage = new createjs.Text("--", "bold 20px Arial", "#ffffff");
+		textPercentage.text = ((this.correctCounter / this.sequenceIndex) * 100).toFixed(1) + " %";
+		textPercentage.x = .3 * this.width;
+		textPercentage.y = .35 * this.height;
 
 		this.sequenceStage.addChild(text);
-
+		this.sequenceStage.addChild(textPercentage);
 		
 	}
 
 	// this sequence loops continously 
 	SequenceHandler.prototype.handleSequence = function(seq){
-
+		
 		if(this.fixationTimeOver() && this.sequenceOn){
-			var num = this.sequence[this.sequenceIndex]["numerator"];
-			var den = this.sequence[this.sequenceIndex]["denominator"];
 
-			if(this.sequenceIndex == (this.sequenceRowLength-1)){
-
-				if(this.sequenceOn){
-
-					/*
-
-					POST REQUEST SHOULD GO HERE...
-
-
-					*/
-
-
-					console.log(this.sequence);
-					this.sequenceOn = !this.sequenceOn;
-				}
-
-				this.displayEndSequence();
+			if(this.instruction){
+				this.displayInstruction();
 			}
 			else{
+				var num = this.sequence[this.sequenceIndex]["numerator"];
+				var den = this.sequence[this.sequenceIndex]["denominator"];
 
-				if(this.timeRecorder == -1){
-					this.timeRecorder = Date.now();
+				// if time ends
+				if(this.timeLeft() < 0 || this.timeLeft() == 0){
+					if(this.sequenceOn){
+						this.sequenceOn = !this.sequenceOn;
+					}
+
+					this.displayEndSequence();
 				}
-				
-				//console.log(this.timeRecorder);
-				this.showFraction(num, den);
-				this.showNonSymbolicRatios();
-				// set time:
+				// if we are at the end of the dataset
+				else if(this.sequenceIndex == (this.sequenceRowLength-1)){
+
+					if(this.sequenceOn){
+
+
+
+						//console.log(this.sequence);
+						this.sequenceOn = !this.sequenceOn;
+					}
+
+					this.displayEndSequence();
+				}
+				else{
+
+					// displays the fraction
+
+					if(this.timeRecorder == -1){
+						this.timeRecorder = Date.now();
+					}
+					
+					
+					//console.log(this.timeRecorder);
+					this.showFraction(num, den);
+					this.showNonSymbolicRatios();
+					// set time:
+				}
 			}
 		}
 	}
@@ -302,6 +374,7 @@
 		this.r_line_ratio.visible = false;
 
 		this.fraction_Container.visible = false;
+		this.correctText.visible = false;
 	}
 
 	// this generates the image of the fixation. The param, time takes in
@@ -331,6 +404,10 @@
 
 		if(!this.fraction_Container.visible){
 			this.fraction_Container.visible = !this.fraction_Container.visible;
+		}
+
+		if(!this.correctText.visible){
+			this.correctText.visible = !this.correctText.visible;
 		}
 
 		// changes the numerator and denominator values

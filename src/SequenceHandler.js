@@ -7,6 +7,10 @@
 		this.sequenceIndex = 0;		// the current fraction pair
 		this.sequenceOn = true;
 		this.instruction = true;
+
+		this.introSlides = [];
+		this.introSlidesIndex = 0;
+
 		// fixation time
 		this.time = 500;	// in milliseconds
 		this.timeRecorder = 0;	// used to keep track of time
@@ -55,6 +59,35 @@
 		var SCALE = this.height * .4;
 		var cw = this.width;
 		var ch = this.height;
+
+		
+		for(var i = 1; i < 7; i ++){
+			this.introSlides[i - 1] = new createjs.Bitmap("src/img/lines_align_" + i + ".jpg"); 
+			this.introSlides[i - 1].visible = false;
+		}
+
+		/*
+		this.introImg1 = new createjs.Bitmap("src/img/lines_align_1.jpg");
+		this.introImg1.visible = true;
+
+		this.introImg2 = new createjs.Bitmap("src/img/lines_align_2.jpg");
+		this.introImg2.visible = false;
+
+		this.introImg3 = new createjs.Bitmap("src/img/lines_align_3.jpg");
+		this.introImg3.visible = false;
+
+		this.introImg4 = new createjs.Bitmap("src/img/lines_align_4.jpg");
+		this.introImg4.visible = false;
+
+		this.introImg5 = new createjs.Bitmap("src/img/lines_align_5.jpg");
+		this.introImg5.visible = false;
+
+		this.introImg6 = new createjs.Bitmap("src/img/lines_align_6.jpg");
+		this.introImg6.visible = false;
+		*/
+
+		this.endImg = new createjs.Bitmap("src/img/endtraining.jpg");
+		this.endImg.visible = false;
 
 		// text
 		this.instructionText = new createjs.Text("[INSTRUCTION]", "36px Arial", "#FFFFFF");
@@ -295,6 +328,19 @@
 		this.correctText.y = .01 * ch;
 
 		this.sequenceStage.addChild(this.correctText);
+		/*
+		this.sequenceStage.addChild(this.introImg1);
+		this.sequenceStage.addChild(this.introImg2);
+		this.sequenceStage.addChild(this.introImg3);
+		this.sequenceStage.addChild(this.introImg4);
+		this.sequenceStage.addChild(this.introImg5);
+		this.sequenceStage.addChild(this.introImg6);*/
+
+		for(var i = 0; i < 6; i++){
+			this.sequenceStage.addChild(this.introSlides[i]);
+		}
+
+		this.sequenceStage.addChild(this.endImg);
 	}
 
 	SequenceHandler.prototype.startSequence = function(){
@@ -310,20 +356,31 @@
 	}
 
 	SequenceHandler.prototype.displayInstruction = function(){
-		this.instructionText.visible = true;
-		this.instructionText2.visible = true;
+		//this.instructionText.visible = true;
+		//this.instructionText2.visible = true;
+
+		this.introSlides[this.introSlidesIndex].visible = true;
+
 
 		var self = this;
 		document.onkeydown = function checkKey(e){
 			e = e || window.event;
 
 			if(e.keyCode == 32){
-				self.instructionText.visible = false;
-				self.instructionText2.visible = false;
+				//self.instructionText.visible = false;
+				//self.instructionText2.visible = false;
 
-				self.instruction = false;
+				self.introSlides[self.introSlidesIndex].visible = false;
 
-				self.sessionTimer = createCountDown(self.sessionTime);
+
+
+				self.introSlidesIndex++;
+				
+				if(self.introSlidesIndex == self.introSlides.length){
+					self.instruction = false;
+					console.log('instruction turned off');
+					self.sessionTimer = createCountDown(self.sessionTime);
+				}
 			}
 		}		
 	}

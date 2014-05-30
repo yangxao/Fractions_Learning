@@ -16,7 +16,7 @@ function convertMStoS(num, p){
 	return (num/ 1000).toFixed(p);
 }
 
-function readData(){
+function getData(){
 
 	test_array=[{"numerator":"1","denominator":"2","sn":"sn1","distract_distance":0.1,"target_magnitude":0.5,"distract_magnitude":0.6,"correct_side":"left","a_length":0.165,"b_length":0.33,"c_length":0.198,"d_length":0.33,"a_top":0.5,"b_top":0.5,"c_top":0.5,"d_top":0.5},
 				{"numerator":"1","denominator":"3","sn":"sn1","distract_distance":0.1,"target_magnitude":0.33333333333333,"distract_magnitude":0.43333333333333,"correct_side":"left","a_length":0.13666666666667,"b_length":0.41,"c_length":0.17766666666667,"d_length":0.41,"a_top":0.5,"b_top":0.5,"c_top":0.5,"d_top":0.5},
@@ -35,8 +35,6 @@ function readData(){
 
 function init(user_id){
 
-	var inputData = readData();
-
 	// set up the stage
 	canvas = document.getElementById("myCanvas");
 	stage = new createjs.Stage(canvas);	
@@ -47,12 +45,16 @@ function init(user_id){
 		IN THE FUTURE CHECK FOR PLATFORM
 	*/
 
-	// sequenceHandler will parse the input data
-	sequenceHandler = new SequenceHandler(stage, canvas.width, canvas.height, inputData, user_id);
+	startTest(user_id);
 
-	stage.update();
 	createjs.Ticker.addEventListener("tick", tick);
 	createjs.Ticker.setFPS(60);
+}
+
+function startTest(user_id){
+
+	var inputData = getData();
+	sequenceHandler = new SequenceHandler(stage, canvas.width, canvas.height, inputData, user_id);
 }
 
 function tick(){

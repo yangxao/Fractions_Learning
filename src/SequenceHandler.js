@@ -2,34 +2,38 @@
 	function SequenceHandler(stage, cWidth, cHeight, inputData, userId){
 		this.sequenceStage = stage;
 
-		this.width  = cWidth;
-		this.height = cHeight;
+		this.width  = cWidth;		// canvas width
+		this.height = cHeight;		// canvas height
+
 		this.sequenceIndex = 0;		// the current fraction pair
-		this.sequenceOn = true;
-		this.instruction = true;
+		this.sequenceOn = true;		// Are there questions in the sequence left?
+		this.instruction = true;	// should instructions be displayed?
 
-		this.userId = userId;
+		this.userId = userId;		// the user's id
 
-		this.introSlides = [];
-		this.introSlidesIndex = 0;
+		this.introSlides = [];		// array containing the instruction slides
+		this.introSlidesIndex = 0;	// index to keep track of the slides
 
-		// fixation time
-		this.time = 500;	// in milliseconds
-		this.timeRecorder = 0;	// used to keep track of time
-		this.sessionTime = 60000 * 20;	// an hour
-		this.sessionTimer = this.sessionTime; 
+		this.correctCounter = 0;	// keeps track of correct choices
 
-		this.correctCounter = 0;
+		/*TIMERS*/
+		this.fixationTime = 500;				// fixation time in milliseconds
+		this.timeRecorder = 0;					// used to keep track of rt for each question
+
+		this.sessionTime = 60000 * 20;			// timer for the whole session
+		this.sessionTimer = this.sessionTime; 	// will hold timer function
 
 		// how long can participant take on each problem
+		this.isTimedOut = false;
 		this.timeOutTime = 3000;
 		this.timeOutTimer = this.timeOutTime;
-		this.isTimedOut = false;
-
+		
+		// how long to display feedback
 		this.feedbackOn = false;
-		this.feedbackTime = 1000;
+		this.feedbackTime = 500;
 		this.feedbackTimer = this.feedbackTime;
 
+		// line objects for nonsymbolic ratios
 		this.line_a = {};
 		this.line_b = {};
 		this.line_c = {};
@@ -38,38 +42,30 @@
 		// create the objects for fractions
 		this.defineDrawObjects();
 
-		// parses the inputdata, and start the sequence
+		// parses the inputdata and start the sequence
 		this.outPutData = inputData;
 		this.parseInputData(inputData);
 		this.startSequence();
-	};
+	}
 
 
-	// this function takes in a 2d array
-	// Loops through the rows, and keeps track of specific columns
-	//
-	SequenceHandler.prototype.parseInputData = function(inputData) {
-		
-		var sequence = {};
-		this.sequenceRowLength = inputData.length;
-		this.sequence = inputData;
-	};
-
-
-
-
-	// will be reusing all the same objects, just changing them
+	/*
+		This function defines all of the objects that will be drawn and their
+		corresponding events.
+	*/
 	SequenceHandler.prototype.defineDrawObjects = function() {
 
 		var SCALE = this.height * .4;
 		var cw = this.width;
 		var ch = this.height;
 
+		// loads the instruction images
 		for(var i = 1; i < 7; i ++){
 			this.introSlides[i - 1] = new createjs.Bitmap("src/img/lines_align_" + i + ".jpg"); 
 			this.introSlides[i - 1].visible = false;
 		}
 
+		// loads the end instruction image
 		this.endImg = new createjs.Bitmap("src/img/endtraining.jpg");
 		this.endImg.visible = false;
 
@@ -119,6 +115,10 @@
 		this.timeOutSpacePromptText.y = .7 * ch;
 		this.timeOutSpacePromptText.visible = false;
 
+		this.correctText = new createjs.Text("correct: 0", "bold 20px Arial", "#ffffff");
+		this.correctText.x = .75 * cw;
+		this.correctText.y = .01 * ch;
+
 		/*
 			This code chunk handles the click event for the left fraction.
 			In the future, line ratio should be its own class
@@ -128,38 +128,12 @@
 
 
 			if(self.sequence[self.sequenceIndex]["correct_side"] == "left"){
-				/*
-					Sequence is correct.
-					Record data.
-				*/
-
-				var time = Date.now() - self.timeRecorder;
-				time = convertMStoS(time, 3);
-
-				self.outPutData[self.sequenceIndex]['id'] = self.userId;
-				self.outPutData[self.sequenceIndex]['correctness'] = "correct";
-				self.outPutData[self.sequenceIndex]['side_selected'] = "left";
-				self.outPutData[self.sequenceIndex]['rt'] = time;
-
-				self.correctCounter += 1;
-				self.correctText.text = "correct: " + self.correctCounter;
-				self.correctFeedbackText.visible = true;
+				
+				self.handleCorrectInput(self);
 			}
 			else{
-				/*
-					Sequence is incorrect.
-					Record data.
-				*/
 
-				var time = Date.now() - self.timeRecorder;
-				time = convertMStoS(time, 3);
-
-				self.outPutData[self.sequenceIndex]['id'] = self.userId;
-				self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
-				self.outPutData[self.sequenceIndex]['side_selected'] = "left";
-				self.outPutData[self.sequenceIndex]['rt'] = time;
-
-				self.incorrectFeedbackText.visible = true;
+				self.handleIncorrectInput(self);
 			}
 
 			self.feedbackOn = true;
@@ -177,40 +151,16 @@
 		this.r_line_ratio.addChild(this.r_click_area);
 		this.r_line_ratio.addChild(this.r_line);
 
-
-
 		this.r_line_ratio.on("click", function(evt){
 
 
 			if(self.sequence[self.sequenceIndex]["correct_side"] == "right"){
 
-				var time = Date.now() - self.timeRecorder;
-				time = convertMStoS(time, 3);
-
-				self.outPutData[self.sequenceIndex]['id'] = self.userId;
-				self.outPutData[self.sequenceIndex]['correctness'] = "correct";
-				self.outPutData[self.sequenceIndex]['side_selected'] = "right";
-				self.outPutData[self.sequenceIndex]['rt'] = time;
-
-				self.correctCounter += 1;
-				self.correctText.text = "correct: " + self.correctCounter;
-				self.correctFeedbackText.visible = true;
+				self.handleCorrectInput(self);
 			}
 			else{
-				/*
-					Sequence is incorrect.
-					Record data.
-				*/
-
-				var time = Date.now() - self.timeRecorder;
-				time = convertMStoS(time, 3);
-
-				self.outPutData[self.sequenceIndex]['id'] = self.userId;
-				self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
-				self.outPutData[self.sequenceIndex]['side_selected'] = "right";
-				self.outPutData[self.sequenceIndex]['rt'] = time;
-
-				self.incorrectFeedbackText.visible = true;
+		
+				self.handleIncorrectInput(self);
 			}
 
 			self.feedbackOn = true;
@@ -242,7 +192,7 @@
 		this.fraction_Container.addChild(this.divsionSign);
 		this.fraction_Container.addChild(this.denominatorText);
 
-		// adds the elements to the canvas stage for display
+		/*THIS CODE CHUNK ADDS ELEMENTS TO THE STAGE FOR DISPLAY*/
 		this.sequenceStage.addChild(this.fraction_Container);
 		this.sequenceStage.addChild(this.l_line_ratio);
 		this.sequenceStage.addChild(this.r_line_ratio);
@@ -250,11 +200,6 @@
 		this.sequenceStage.addChild(this.incorrectFeedbackText);
 		this.sequenceStage.addChild(this.timeOutFeedbackText);
 		this.sequenceStage.addChild(this.timeOutSpacePromptText);
-
-
-		this.correctText = new createjs.Text("correct: 0", "bold 20px Arial", "#ffffff");
-		this.correctText.x = .75 * cw;
-		this.correctText.y = .01 * ch;
 
 		this.sequenceStage.addChild(this.correctText);
 
@@ -276,68 +221,11 @@
 
 		this.unShowFeedback();
 		this.unShowMainScreen();
-		this.fixation.startTime = createCountDown(this.time);
+		this.fixation.startTime = createCountDown(this.fixationTime);
 		this.fixation.visible = true;
 		this.handleSequence();
 	}
 
-
-	/*
-		This function uses introSlides, an array containing
-		all of the intro slide images, and introSlidesIndex to
-		iterate through the list of instruction images. Each
-		image changes after the user presses 'space'. At the end
-		of the index, the test will start.
-	
-	*/
-	SequenceHandler.prototype.displayInstruction = function(){
-
-		// sets the current slide to visible
-		this.introSlides[this.introSlidesIndex].visible = true;
-
-
-		var self = this;
-		document.onkeydown = function checkKey(e){
-			e = e || window.event;
-
-			if(e.keyCode == 32){
-
-				// make current slide invisible and update to next slide
-				self.introSlides[self.introSlidesIndex].visible = false;
-				self.introSlidesIndex++;
-
-				// if we are at the end of slides, start the session timer
-				// and set the instruction flag to false
-				if(self.introSlidesIndex == self.introSlides.length){
-					self.instruction = false;
-					self.sessionTimer = createCountDown(self.sessionTime);
-				}
-			}
-		} // end function
-	} // end displayInstruction
-
-
-	/*
-	Hides the the fraction and nonysmbolic ratios.
-	Can change to show statistics in the end, or to submit the
-	POST request. Currently displays the end img and loops back
-	to start of another dataset.
-	*/
-	SequenceHandler.prototype.displayEndSequence = function(){
-		this.unShowMainScreen();
-		this.endImg.visible = true;
-
-		var self = this;
-		document.onkeydown = function checkKey(e){
-			e = e || window.event;
-
-			if(e.keyCode == 32){
-
-				// code to loop back
-
-			}
-		} // end function
-	}
 
 	/*
 		handleSequence is the main function of this program. It will be called
@@ -464,6 +352,104 @@
 
 	}
 
+	/*
+		This function uses introSlides, an array containing
+		all of the intro slide images, and introSlidesIndex to
+		iterate through the list of instruction images. Each
+		image changes after the user presses 'space'. At the end
+		of the index, the test will start.
+	
+	*/
+	SequenceHandler.prototype.displayInstruction = function(){
+
+		// sets the current slide to visible
+		this.introSlides[this.introSlidesIndex].visible = true;
+
+
+		var self = this;
+		document.onkeydown = function checkKey(e){
+			e = e || window.event;
+
+			if(e.keyCode == 32){
+
+				// make current slide invisible and update to next slide
+				self.introSlides[self.introSlidesIndex].visible = false;
+				self.introSlidesIndex++;
+
+				// if we are at the end of slides, start the session timer
+				// and set the instruction flag to false
+				if(self.introSlidesIndex == self.introSlides.length){
+					self.instruction = false;
+					self.sessionTimer = createCountDown(self.sessionTime);
+				}
+			}
+		} // end function
+	} // end displayInstruction
+
+	/*
+	Hides the the fraction and nonysmbolic ratios.
+	Can change to show statistics in the end, or to submit the
+	POST request. Currently displays the end img and loops back
+	to start of another dataset.
+	*/
+	SequenceHandler.prototype.displayEndSequence = function(){
+		this.unShowMainScreen();
+		this.endImg.visible = true;
+
+		var self = this;
+		document.onkeydown = function checkKey(e){
+			e = e || window.event;
+
+			if(e.keyCode == 32){
+
+				console.log(self.outPutData);
+
+				// code to loop back
+				init(self.userId);
+			}
+		} // end function
+	}
+
+
+	// this function takes in a 2d array
+	// Loops through the rows, and keeps track of specific columns
+	//
+	SequenceHandler.prototype.parseInputData = function(inputData) {
+		
+		var sequence = {};
+		this.sequenceRowLength = inputData.length;
+		this.sequence = inputData;
+	}
+
+	// handles the correct user selection
+	SequenceHandler.prototype.handleCorrectInput = function(self) {
+		
+		var time = Date.now() - self.timeRecorder;
+		time = convertMStoS(time, 3);
+
+		self.outPutData[self.sequenceIndex]['id'] = self.userId;
+		self.outPutData[self.sequenceIndex]['correctness'] = "correct";
+		self.outPutData[self.sequenceIndex]['side_selected'] = "left";
+		self.outPutData[self.sequenceIndex]['rt'] = time;
+
+		self.correctCounter += 1;
+		self.correctText.text = "correct: " + self.correctCounter;
+		self.correctFeedbackText.visible = true;
+	}
+
+	// handles the incorrect user selection
+	SequenceHandler.prototype.handleIncorrectInput = function(self){
+		var time = Date.now() - self.timeRecorder;
+		time = convertMStoS(time, 3);
+
+		self.outPutData[self.sequenceIndex]['id'] = self.userId;
+		self.outPutData[self.sequenceIndex]['correctness'] = "incorrect";
+		self.outPutData[self.sequenceIndex]['side_selected'] = "left";
+		self.outPutData[self.sequenceIndex]['rt'] = time;
+
+		self.incorrectFeedbackText.visible = true;
+	}
+
 
 	/*
 	Hides the fraction and nonsymoblic ratios.
@@ -476,6 +462,8 @@
 		this.correctText.visible = false;
 	}
 
+
+	// Hides feedback text
 	SequenceHandler.prototype.unShowFeedback = function(){
 		this.correctFeedbackText.visible = false;
 		this.incorrectFeedbackText.visible = false;
@@ -522,6 +510,7 @@
 		this.denominatorText.text = dem;
 
 	}
+
 
 	SequenceHandler.prototype.showNonSymbolicRatios = function(ratio1, ratio2, scale)
 	{

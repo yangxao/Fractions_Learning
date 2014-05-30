@@ -9,14 +9,12 @@ Fractions Learning Web App
 - FractionsLearning.js
 - SequenceHandler.js
 
-=====================
 index.html
 =====================
 
 index.html is the shell and provides a simple javascript code to generate a form that takes in any value.
 The value is passed on to FractionsLearning.js as a parameter in its init function.
 
-=====================
 FractionsLearning.js
 =====================
 
@@ -32,8 +30,6 @@ most of the program
 
 function tick -> this function gets called every clock cycle. 
 
-
-=====================
 SequenceHandler.js
 =====================
 
@@ -51,13 +47,8 @@ in FractionsLearning.js. For more interative and changing datasets, change the c
 for different datasets. In addition, displayEndSequence() may be a good place to make a POST request to the server with the user's
 response which is stored in this.outPutData.
 
-
-
 =========================
 
 Feel free to contact me if you have any questions.
 Moving forward, it may be best to contact me at:
 divxyng.edu@gmail.com
-
-instead of my wisc email.
-

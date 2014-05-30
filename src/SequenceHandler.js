@@ -23,10 +23,8 @@
 		this.timeOutTime = 3000;
 		this.timeOutTimer = this.timeOutTime;
 		this.timedOutSwitch = true;
-		// how long feedback will be displayed on screen
-		this.feedbackTime = 1000;
-		this.feedbackTimer = this.feedbackTime;
-		this.feedbackTimerOn = false;
+
+		this.feedbackOn = false;
 
 		this.line_a = {};
 		this.line_b = {};
@@ -66,41 +64,8 @@
 			this.introSlides[i - 1].visible = false;
 		}
 
-		/*
-		this.introImg1 = new createjs.Bitmap("src/img/lines_align_1.jpg");
-		this.introImg1.visible = true;
-
-		this.introImg2 = new createjs.Bitmap("src/img/lines_align_2.jpg");
-		this.introImg2.visible = false;
-
-		this.introImg3 = new createjs.Bitmap("src/img/lines_align_3.jpg");
-		this.introImg3.visible = false;
-
-		this.introImg4 = new createjs.Bitmap("src/img/lines_align_4.jpg");
-		this.introImg4.visible = false;
-
-		this.introImg5 = new createjs.Bitmap("src/img/lines_align_5.jpg");
-		this.introImg5.visible = false;
-
-		this.introImg6 = new createjs.Bitmap("src/img/lines_align_6.jpg");
-		this.introImg6.visible = false;
-		*/
-
 		this.endImg = new createjs.Bitmap("src/img/endtraining.jpg");
 		this.endImg.visible = false;
-
-		// text
-		this.instructionText = new createjs.Text("[INSTRUCTION]", "36px Arial", "#FFFFFF");
-		this.instructionText.x = .25 * cw;
-		this.instructionText.y = .4 * ch;
-		this.instructionText.visible = false;
-		this.sequenceStage.addChild(this.instructionText);
-
-		this.instructionText2 = new createjs.Text("Press [space] to continue", "24px Arial", "#FFFFFF");
-		this.instructionText2.x = .25 * cw;
-		this.instructionText2.y = .5 * ch;
-		this.instructionText2.visible = false;
-		this.sequenceStage.addChild(this.instructionText2);
 
 		//  draws the fixation object
 		this.fixation =  new createjs.Shape();
@@ -139,7 +104,7 @@
 		this.incorrectFeedbackText.y = .4 * ch;
 		this.incorrectFeedbackText.visible = false;
 
-		this.timeOutFeedbackText = new createjs.Text("time out", "24px Arial", "#FFFFFF");
+		this.timeOutFeedbackText = new createjs.Text("too slow", "24px Arial", "#FFFFFF");
 		this.timeOutFeedbackText.x = .42 * cw;
 		this.timeOutFeedbackText.y = .4 * ch;
 		this.timeOutFeedbackText.visible = false;
@@ -197,19 +162,11 @@
 					self.outPutData[self.sequenceIndex]['side_selected'] = "left";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 
-					self.r_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
-
 					console.log("incorrect");
 					self.incorrectFeedbackText.visible = true;
 				}
 
-				// go to the next row
-				// self.sequenceIndex++;
-				//self.sequenceIndex += 1;
-
-				// create a timer for the feedback
-				self.feedbackTimer = createCountDown(self.feedbackTime);
-				self.feedbackTimerOn = true;
+				self.feedbackOn = true;
 			}
 
 			self.handleSequence();
@@ -240,12 +197,6 @@
 			else{
 
 				if(self.sequence[self.sequenceIndex]["correct_side"] == "right"){
-					/*
-						Sequence is correct.
-						Record data.
-					*/
-					//console.log(self.timeRecorder);
-					//console.log(Date.now());
 
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
@@ -265,9 +216,6 @@
 						Record data.
 					*/
 
-					//console.log(self.timeRecorder);
-					//console.log(Date.now());
-
 					var time = Date.now() - self.timeRecorder;
 					time = convertMStoS(time, 3);
 
@@ -275,17 +223,11 @@
 					self.outPutData[self.sequenceIndex]['side_selected'] = "right";
 					self.outPutData[self.sequenceIndex]['rt'] = time;
 
-					self.l_click_area.graphics.clear().f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
-
 					console.log("incorrect");
 					self.incorrectFeedbackText.visible = true;
 				}
 
-				//self.sequenceIndex += 1;
-
-				// create a timer for the feedback
-				self.feedbackTimer = createCountDown(self.feedbackTime);
-				self.feedbackTimerOn = true;
+				self.feedbackOn = true;
 			}
 
 			self.handleSequence();
@@ -328,13 +270,6 @@
 		this.correctText.y = .01 * ch;
 
 		this.sequenceStage.addChild(this.correctText);
-		/*
-		this.sequenceStage.addChild(this.introImg1);
-		this.sequenceStage.addChild(this.introImg2);
-		this.sequenceStage.addChild(this.introImg3);
-		this.sequenceStage.addChild(this.introImg4);
-		this.sequenceStage.addChild(this.introImg5);
-		this.sequenceStage.addChild(this.introImg6);*/
 
 		for(var i = 0; i < 6; i++){
 			this.sequenceStage.addChild(this.introSlides[i]);
@@ -356,8 +291,6 @@
 	}
 
 	SequenceHandler.prototype.displayInstruction = function(){
-		//this.instructionText.visible = true;
-		//this.instructionText2.visible = true;
 
 		this.introSlides[this.introSlidesIndex].visible = true;
 
@@ -367,15 +300,13 @@
 			e = e || window.event;
 
 			if(e.keyCode == 32){
-				//self.instructionText.visible = false;
-				//self.instructionText2.visible = false;
 
 				self.introSlides[self.introSlidesIndex].visible = false;
 
 
 
 				self.introSlidesIndex++;
-				
+
 				if(self.introSlidesIndex == self.introSlides.length){
 					self.instruction = false;
 					console.log('instruction turned off');
@@ -393,26 +324,13 @@
 	*/
 	SequenceHandler.prototype.displayEndSequence = function(){
 		this.unShow();
-
-		// print stats
-		var text = new createjs.Text("--", "bold 20px Arial", "#ffffff");
-		text.text = "You got " + this.correctCounter + " / " + this.sequenceIndex + " correct."; 
-		text.x = .3 * this.width;
-		text.y = .3 * this.height;
-
-		var textPercentage = new createjs.Text("--", "bold 20px Arial", "#ffffff");
-		textPercentage.text = ((this.correctCounter / this.sequenceIndex) * 100).toFixed(1) + " %";
-		textPercentage.x = .3 * this.width;
-		textPercentage.y = .35 * this.height;
-
-		this.sequenceStage.addChild(text);
-		this.sequenceStage.addChild(textPercentage);
-		
+		this.endImg.visible = true;
 	}
 
 	// this sequence loops continously 
 	SequenceHandler.prototype.handleSequence = function(seq){
 
+		/*
 		// if this is during a transition
 		if(this.feedbackTimerOn){
 			if(this.feedbackTimer() < 0){
@@ -425,8 +343,28 @@
 				this.startSequence();
 			}
 		}
+		*/
+	
+		if(this.feedbackOn){
+			this.unShow();
 
-		if(this.fixationTimeOver() && this.sequenceOn){
+			//DISPLAY FEEDBACK
+
+			var self = this;
+			document.onkeydown = function checkKey(e){
+				e = e || window.event;
+
+				if(e.keyCode == 32){
+					console.log('key');
+
+					self.feedbackOn = false;
+					self.sequenceIndex++;
+					self.startSequence();
+				}
+			}		
+
+		}
+		else if(this.fixationTimeOver() && this.sequenceOn){
 
 			if(this.instruction){
 				this.displayInstruction();
@@ -472,24 +410,11 @@
 					if(this.timeOutTimer() < 0){
 
 						this.outPutData[this.sequenceIndex]['correctness'] = "incorrect";
-						this.outPutData[this.sequenceIndex]['side_selected'] = "time_out";
+						this.outPutData[this.sequenceIndex]['side_selected'] = "too slow";
 						this.outPutData[this.sequenceIndex]['rt'] = this.timeOutTime;
 						this.timeOutFeedbackText.visible = true;
 
-						// display correct choice
-						var SCALE = this.height * .4;
-						if(this.sequence[this.sequenceIndex]["correct_side"] == "right"){
-							this.r_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
-						}
-						else{
-							this.l_click_area.graphics.f('#6699FF').rr(-10,-10, 40, SCALE + 20,10);
-						}
-
-						if(this.timedOutSwitch){
-							this.feedbackTimer = createCountDown(this.feedbackTime);
-							this.feedbackTimerOn = true;
-							this.timedOutSwitch = false;
-						}
+						this.feedbackOn = true;
 					}
 
 				}
@@ -514,10 +439,7 @@
 		this.correctFeedbackText.visible = false;
 		this.incorrectFeedbackText.visible = false;
 		this.timeOutFeedbackText.visible = false;
-
-		var SCALE = this.height * .4;
-		this.l_click_area.graphics.f('#AAAAAA').rr(-10,-10, 40, SCALE + 20,10);
-		this.r_click_area.graphics.f('#AAAAAA').rr(-10,-10, 40, SCALE + 20,10);
+		
 	}
 
 	// this generates the image of the fixation. The param, time takes in

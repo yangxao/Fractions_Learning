@@ -1,7 +1,7 @@
 Fractions_Learning
 ==================
 
-Fractions Learning Web App
+Fractions Learning
 
 3 Main Files:
 
@@ -48,7 +48,3 @@ for different datasets. In addition, displayEndSequence() may be a good place to
 response which is stored in this.outPutData.
 
 =========================
-
-Feel free to contact me if you have any questions.
-Moving forward, it may be best to contact me at:
-divxyng.edu@gmail.com
